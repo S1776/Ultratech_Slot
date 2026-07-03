@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UltraTech Paid Services - VR Demo Booking</title>
-    <!-- Tailwind CSS for modern UI styling -->
+    <title>UltraTech Paid Services - Booking Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- SheetJS library for generating Excel spreadsheets -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .slot-booked {
@@ -19,31 +17,24 @@
 </head>
 <body class="bg-gray-50 font-sans min-h-screen">
 
-    <!-- NAVIGATION BAR -->
     <nav class="bg-amber-500 text-white p-4 shadow-md flex justify-between items-center">
         <div class="flex items-center space-x-2">
             <span class="text-xl font-bold tracking-wider">UltraTech</span>
             <span class="text-xs bg-black/20 px-2 py-0.5 rounded text-amber-100 font-semibold">PAID SERVICES</span>
         </div>
-        <!-- Secret Admin button: Only injected via script if URL parameter matches (?admin=true) -->
         <div id="adminNavContainer"></div>
     </nav>
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         
-        <!-- ========================================== -->
-        <!--          CUSTOMER BOOKING SCREEN           -->
-        <!-- ========================================== -->
         <div id="customerView" class="block">
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                <!-- Banner Title Header -->
                 <div class="bg-gradient-to-r from-gray-900 to-amber-600 p-6 text-white">
-                    <h1 class="text-2xl md:text-3xl font-bold">VR Demo Gadget Experience</h1>
-                    <p class="text-amber-200 text-sm mt-1">Immersive Interior & Exterior Building Design Visualization</p>
+                    <h1 id="dynamicMainHeading" class="text-2xl md:text-3xl font-bold">UltraTech Professional Services</h1>
+                    <p id="dynamicSubHeading" class="text-amber-200 text-sm mt-1">Premium Technical Building Solutions & Expert Coordination</p>
                 </div>
 
                 <form id="bookingForm" onsubmit="handleBooking(event)" class="p-6 space-y-6">
-                    <!-- Text Fields Row -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
@@ -71,16 +62,13 @@
                         </div>
                     </div>
 
-                    <!-- Interactive Time Scale Grid Selector (10 AM to 5 PM) -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Select Time Slot * <span class="text-xs text-gray-500 font-normal">(Hourly availability)</span></label>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="timeSlotContainer">
-                            <!-- Populated dynamically via JS engine -->
-                        </div>
+                            </div>
                         <input type="hidden" id="selectedTime" required>
                     </div>
 
-                    <!-- Call Action Trigger Terminal Card -->
                     <div class="bg-amber-50 rounded-xl p-5 border border-amber-200/60 text-center space-y-4">
                         <div class="text-sm text-gray-700">
                             <p class="font-medium">To finalize and register your slot, lock your details below and give a quick <strong class="text-amber-700">Missed Call</strong> to our tracking terminal.</p>
@@ -99,12 +87,8 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!--            ADMIN DASHBOARD VIEW            -->
-        <!-- ========================================== -->
         <div id="adminView" class="hidden space-y-8">
             
-            <!-- Google Ads Link Generator System -->
             <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
                     <span>🔗 Google Ads Smart-Link Generator</span>
@@ -116,8 +100,8 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Campaign Name (UTM Tag)</label>
-                            <input type="text" id="campaignName" value="ut_vr_interior_exterior" oninput="generateAdsLink()" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Campaign Name (Used for Text Heading & Analytics)</label>
+                            <input type="text" id="campaignName" value="VR Demo Gadget Experience" oninput="generateAdsLink()" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="e.g. Concrete Selection Hub">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Target Terminal Mobile No.</label>
@@ -131,7 +115,6 @@
                 </div>
             </div>
 
-            <!-- Lead Entry Table Records and Excel Exporter -->
             <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
                 <div class="p-6 bg-gray-900 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -146,7 +129,6 @@
                     </div>
                 </div>
 
-                <!-- Database Log Table -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -161,8 +143,7 @@
                             </tr>
                         </thead>
                         <tbody id="registryTableBody" class="text-sm divide-y divide-gray-100 text-gray-700">
-                            <!-- Injected dynamically by logic loops -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -170,7 +151,6 @@
         </div>
     </div>
 
-    <!-- MAIN APP SCRIPT ENGINE -->
     <script>
         const HOURS = ["10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"];
         let bookings = JSON.parse(localStorage.getItem('ut_vr_bookings')) || [];
@@ -181,11 +161,25 @@
             document.getElementById('terminalNumberInput').value = config.terminalNumber;
             document.getElementById('displayTerminalNum').innerText = config.terminalNumber;
             
+            applyDynamicTexts();
             checkAdminPrivileges();
             generateAdsLink();
             renderTimeSlots();
             renderTable();
         };
+
+        // NEW: Reads the parameters out of the address link to change text dynamically
+        function applyDynamicTexts() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const campaignTitle = urlParams.get('title');
+            
+            if (campaignTitle) {
+                // Decodes the text cleanly so spaces and characters show up nicely
+                const cleanTitle = decodeURIComponent(campaignTitle);
+                document.getElementById('dynamicMainHeading').innerText = cleanTitle;
+                document.getElementById('dynamicSubHeading').innerText = "Immersive Customer Registration Portal & Booking Interface";
+            }
+        }
 
         // Secret Door Verification Strategy
         function checkAdminPrivileges() {
@@ -282,7 +276,7 @@
                 type: document.getElementById('custType').value,
                 location: document.getElementById('custLocation').value.trim() || 'Not Provided',
                 bookedSlot: chosenSlot,
-                campaignContext: `Source: ${campaignSource} | Campaign: ${campaignName}`
+                campaignContext: `Source: ${campaignSource} | Campaign Name Tag: ${campaignName}`
             };
 
             bookings.push(newBooking);
@@ -297,14 +291,18 @@
             window.location.href = `tel:${sanitizedPhone}`;
         }
 
+        // UPDATED: Now appends the explicit structural &title= component directly onto your Google Ads link
         function generateAdsLink() {
             const base = document.getElementById('baseAppUrl').value;
-            const camp = encodeURIComponent(document.getElementById('campaignName').value.trim() || 'campaign');
-            const finalUrl = `${base}?utm_source=google_ads&utm_medium=cpc&utm_campaign=${camp}`;
+            const textValue = document.getElementById('campaignName').value.trim() || 'UltraTech Service Experience';
+            
+            // Clean formats for URL query string metrics
+            const formatCampaignTag = textValue.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_+|_+$)/g, '');
+            const encodedTitle = encodeURIComponent(textValue);
+            
+            const finalUrl = `${base}?utm_source=google_ads&utm_medium=cpc&utm_campaign=${formatCampaignTag}&title=${encodedTitle}`;
             document.getElementById('generatedLinkOutput').innerText = finalUrl;
         }
-
-        document.getElementById('campaignName').oninput = generateAdsLink;
 
         function updateTerminalNumber() {
             const num = document.getElementById('terminalNumberInput').value.trim();
@@ -357,18 +355,18 @@
                 "Customer Phone": b.phone,
                 "Profession Profile Type": b.type,
                 "Site / Project Location": b.location,
-                "Allocated VR Booking Slot": b.bookedSlot,
+                "Allocated Booking Slot": b.bookedSlot,
                 "Google Ads Marketing Context Data": b.campaignContext
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(formattedData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "VR Lead Conversions");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Lead Conversions");
 
             const maxProps = [{wch: 6}, {wch: 24}, {wch: 24}, {wch: 16}, {wch: 16}, {wch: 28}, {wch: 26}, {wch: 45}];
             worksheet['!cols'] = maxProps;
 
-            XLSX.writeFile(workbook, `UltraTech_VR_Service_Leads_${new Date().toISOString().slice(0,10)}.xlsx`);
+            XLSX.writeFile(workbook, `UltraTech_Service_Leads_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
         function clearSystemData() {
