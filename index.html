@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UltraTech Paid Services - VR Demo Booking</title>
+    <!-- Tailwind CSS for modern UI styling -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- SheetJS library for generating Excel spreadsheets -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .slot-booked {
@@ -17,6 +19,7 @@
 </head>
 <body class="bg-gray-50 font-sans min-h-screen">
 
+    <!-- NAVIGATION BAR -->
     <nav class="bg-amber-500 text-white p-4 shadow-md flex justify-between items-center">
         <div class="flex items-center space-x-2">
             <span class="text-xl font-bold tracking-wider">UltraTech</span>
@@ -29,14 +32,19 @@
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         
+        <!-- ========================================== -->
+        <!--          CUSTOMER BOOKING SCREEN           -->
+        <!-- ========================================== -->
         <div id="customerView" class="block">
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <!-- Banner Title Header -->
                 <div class="bg-gradient-to-r from-gray-900 to-amber-600 p-6 text-white">
                     <h1 class="text-2xl md:text-3xl font-bold">VR Demo Gadget Experience</h1>
                     <p class="text-amber-200 text-sm mt-1">Immersive Interior & Exterior Building Design Visualization</p>
                 </div>
 
                 <form id="bookingForm" onsubmit="handleBooking(event)" class="p-6 space-y-6">
+                    <!-- Text Fields Row -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
@@ -59,13 +67,16 @@
                         </div>
                     </div>
 
+                    <!-- Interactive Time Scale Grid Selector (10 AM to 5 PM) -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Select Time Slot * <span class="text-xs text-gray-500 font-normal">(Hourly availability)</span></label>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="timeSlotContainer">
-                            </div>
+                            <!-- Populated dynamically via JS engine -->
+                        </div>
                         <input type="hidden" id="selectedTime" required>
                     </div>
 
+                    <!-- Call Action Trigger Terminal Card -->
                     <div class="bg-amber-50 rounded-xl p-5 border border-amber-200/60 text-center space-y-4">
                         <div class="text-sm text-gray-700">
                             <p class="font-medium">To finalize and register your slot, lock your details below and give a quick <strong class="text-amber-700">Missed Call</strong> to our tracking terminal.</p>
@@ -84,8 +95,12 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!--            ADMIN DASHBOARD VIEW            -->
+        <!-- ========================================== -->
         <div id="adminView" class="hidden space-y-8">
             
+            <!-- Google Ads Link Generator System -->
             <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
                     <span>🔗 Google Ads Smart-Link Generator</span>
@@ -97,7 +112,7 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Campaign Name</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Campaign Name (UTM Tag)</label>
                             <input type="text" id="campaignName" value="ut_vr_interior_exterior" oninput="generateAdsLink()" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none">
                         </div>
                         <div>
@@ -112,11 +127,12 @@
                 </div>
             </div>
 
+            <!-- Lead Entry Table Records and Excel Exporter -->
             <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
                 <div class="p-6 bg-gray-900 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold">Registration Registry Logs</h2>
-                        <p class="text-xs text-gray-400">Tracks conversions arriving directly via your Google Ads deployment links</p>
+                        <p class="text-xs text-gray-400">Tracks conversions arriving via your active Google Ads campaigns</p>
                     </div>
                     <div class="flex space-x-2">
                         <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-sm font-bold px-4 py-2 rounded shadow transition-colors inline-flex items-center space-x-1">
@@ -126,6 +142,7 @@
                     </div>
                 </div>
 
+                <!-- Database Log Table -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -139,7 +156,8 @@
                             </tr>
                         </thead>
                         <tbody id="registryTableBody" class="text-sm divide-y divide-gray-100 text-gray-700">
-                            </tbody>
+                            <!-- Injected dynamically by logic loops -->
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -147,13 +165,14 @@
         </div>
     </div>
 
+    <!-- MAIN APP SCRIPT ENGINE -->
     <script>
-        // Operational Parameters
+        // Operational Parameters & Core Schedule Config
         const HOURS = ["10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"];
         let bookings = JSON.parse(localStorage.getItem('ut_vr_bookings')) || [];
         let config = JSON.parse(localStorage.getItem('ut_vr_config')) || { terminalNumber: "+91 98765 43210" };
 
-        // Initialization
+        // Core App Bootloader initialization Engine
         window.onload = function() {
             document.getElementById('baseAppUrl').value = window.location.origin + window.location.pathname;
             document.getElementById('terminalNumberInput').value = config.terminalNumber;
@@ -164,7 +183,7 @@
             renderTable();
         };
 
-        // UI Routing Engine
+        // UI Mode View Toggler Navigation Module
         function toggleView() {
             const customerView = document.getElementById('customerView');
             const adminView = document.getElementById('adminView');
@@ -182,12 +201,12 @@
             }
         }
 
-        // Generate Time Slot Interface Grid Component
+        // Generate Time Slot Interface Grid Elements
         function renderTimeSlots() {
             const container = document.getElementById('timeSlotContainer');
             container.innerHTML = '';
             
-            // Get currently occupied slots from persistence data layer
+            // Map occupied keys out of database storage
             const takenSlots = bookings.map(b => b.bookedSlot);
 
             HOURS.forEach(time => {
@@ -212,19 +231,17 @@
             });
         }
 
-        // Handling Active Selection Style changes
+        // UI Interactive Selection State Styles Management
         function selectSlot(element, time) {
             const currentSelected = document.getElementById('selectedTime').value;
-            
-            // Clear prior visual select elements state
             const buttons = document.getElementById('timeSlotContainer').getElementsByTagName('button');
+            
             for(let btn of buttons) {
                 if(!btn.disabled) {
                     btn.className = "p-3 text-sm font-medium border border-gray-200 rounded-xl text-center text-gray-700 hover:border-amber-500 hover:bg-amber-50 cursor-pointer";
                 }
             }
 
-            // Assign structural state data values
             if (currentSelected === time) {
                 document.getElementById('selectedTime').value = '';
             } else {
@@ -233,7 +250,7 @@
             }
         }
 
-        // Registration form execution pipeline handler
+        // Booking submission pipeline handler
         function handleBooking(e) {
             e.preventDefault();
             const chosenSlot = document.getElementById('selectedTime').value;
@@ -243,7 +260,7 @@
                 return;
             }
 
-            // Capture UTM attributes mapped via current location search strings
+            // Extract UTM tracking parameters dropped inside browser location address bars
             const urlParams = new URLSearchParams(window.location.search);
             const campaignSource = urlParams.get('utm_source') || 'Direct Organic / Unknown';
             const campaignName = urlParams.get('utm_campaign') || 'N/A';
@@ -257,22 +274,22 @@
                 campaignContext: `Source: ${campaignSource} | Campaign: ${campaignName}`
             };
 
-            // Commit record to internal structural system logs array
+            // Commit data entry into structural system engine
             bookings.push(newBooking);
             localStorage.setItem('ut_vr_bookings', JSON.stringify(bookings));
 
-            // Clean data UI visual forms configurations state management
+            // Clean UI form conditions state values
             document.getElementById('bookingForm').reset();
             document.getElementById('selectedTime').value = '';
             renderTimeSlots();
             renderTable();
 
-            // Native hardware processing engine execution to trigger dialer application
+            // Native mobile hardware routing switch loop to pop the dial pad
             const sanitizedPhone = config.terminalNumber.replace(/\s+/g, '');
             window.location.href = `tel:${sanitizedPhone}`;
         }
 
-        // Admin Link Building Engine Logic
+        // Tracking URL Generator Module
         function generateAdsLink() {
             const base = document.getElementById('baseAppUrl').value;
             const camp = encodeURIComponent(document.getElementById('campaignName').value.trim() || 'campaign');
@@ -293,7 +310,7 @@
             alert("Tracking deep link copied to clipboard successfully!");
         }
 
-        // Render Table Component Content Row data mapping engine
+        // Render Database Records to Log Table Layout Component
         function renderTable() {
             const tbody = document.getElementById('registryTableBody');
             tbody.innerHTML = '';
@@ -303,7 +320,8 @@
                 return;
             }
 
-            bookings.asReversed().forEach(b => {
+            // Fixed Array structural mapping loop sequence to avoid mobile browser run errors
+            [...bookings].reverse().forEach(b => {
                 const row = document.createElement('tr');
                 row.className = "hover:bg-gray-50 transition-colors";
                 row.innerHTML = `
@@ -318,14 +336,13 @@
             });
         }
 
-        // SheetJS Data Exporter Interface integration Engine
+        // SheetJS Data Exporter Interface Integration Engine
         function exportToExcel() {
             if (bookings.length === 0) {
                 alert("No data available to translate to Excel format.");
                 return;
             }
 
-            // Setup Data Structure
             const formattedData = bookings.map((b, index) => ({
                 "ID": index + 1,
                 "Timestamp Logged": b.timestamp,
@@ -340,15 +357,15 @@
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "VR Lead Conversions");
 
-            // Handle Column Width Constraints calculation mappings automatically
+            // Format layout column boundaries inside output file
             const maxProps = [{wch: 6}, {wch: 24}, {wch: 26}, {wch: 16}, {wch: 28}, {wch: 26}, {wch: 45}];
             worksheet['!cols'] = maxProps;
 
-            // Generate physical downloadable dynamic system trigger action
+            // Trigger structural browser downloadable event handler
             XLSX.writeFile(workbook, `UltraTech_VR_Service_Leads_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
-        // Complete local state system wipe clean logic sequence
+        // System memory database flush cleanup controller
         function clearSystemData() {
             if(confirm("Warning! This operation permanently wipes all local appointments stored on this device. Proceed?")) {
                 bookings = [];
