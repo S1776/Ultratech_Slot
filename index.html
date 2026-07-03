@@ -25,9 +25,8 @@
             <span class="text-xl font-bold tracking-wider">UltraTech</span>
             <span class="text-xs bg-black/20 px-2 py-0.5 rounded text-amber-100 font-semibold">PAID SERVICES</span>
         </div>
-        <button id="toggleViewBtn" onclick="toggleView()" class="bg-amber-700 hover:bg-amber-800 text-sm px-4 py-2 rounded-md font-medium transition-all">
-            Switch to Admin Panel
-        </button>
+        <!-- Secret Admin button: Only injected via script if URL parameter matches (?admin=true) -->
+        <div id="adminNavContainer"></div>
     </nav>
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
@@ -52,6 +51,11 @@
                         </div>
 
                         <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Mobile Phone Number *</label>
+                            <input type="tel" id="custPhone" required pattern="[0-9]{10}" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="Enter 10-digit mobile number">
+                        </div>
+
+                        <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Profile Type *</label>
                             <select id="custType" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white">
                                 <option value="" disabled selected>Select your profile</option>
@@ -61,7 +65,7 @@
                             </select>
                         </div>
 
-                        <div class="md:col-span-2">
+                        <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Project Location <span class="text-gray-400 font-normal">(Optional)</span></label>
                             <input type="text" id="custLocation" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="City, Area or Site Landmark">
                         </div>
@@ -149,6 +153,7 @@
                             <tr class="bg-gray-100 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
                                 <th class="p-4">Timestamp</th>
                                 <th class="p-4">Name</th>
+                                <th class="p-4">Phone</th>
                                 <th class="p-4">Type</th>
                                 <th class="p-4">Location</th>
                                 <th class="p-4">Booked Slot</th>
@@ -167,23 +172,34 @@
 
     <!-- MAIN APP SCRIPT ENGINE -->
     <script>
-        // Operational Parameters & Core Schedule Config
         const HOURS = ["10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"];
         let bookings = JSON.parse(localStorage.getItem('ut_vr_bookings')) || [];
         let config = JSON.parse(localStorage.getItem('ut_vr_config')) || { terminalNumber: "+91 98765 43210" };
 
-        // Core App Bootloader initialization Engine
         window.onload = function() {
             document.getElementById('baseAppUrl').value = window.location.origin + window.location.pathname;
             document.getElementById('terminalNumberInput').value = config.terminalNumber;
             document.getElementById('displayTerminalNum').innerText = config.terminalNumber;
             
+            checkAdminPrivileges();
             generateAdsLink();
             renderTimeSlots();
             renderTable();
         };
 
-        // UI Mode View Toggler Navigation Module
+        // Secret Door Verification Strategy
+        function checkAdminPrivileges() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('admin') === 'true') {
+                const container = document.getElementById('adminNavContainer');
+                container.innerHTML = `
+                    <button id="toggleViewBtn" onclick="toggleView()" class="bg-amber-700 hover:bg-amber-800 text-sm px-4 py-2 rounded-md font-medium transition-all">
+                        Switch to Admin Panel
+                    </button>
+                `;
+            }
+        }
+
         function toggleView() {
             const customerView = document.getElementById('customerView');
             const adminView = document.getElementById('adminView');
@@ -197,16 +213,13 @@
                 customerView.classList.replace('hidden', 'block');
                 adminView.classList.replace('block', 'hidden');
                 toggleBtn.innerText = "Switch to Admin Panel";
-                renderTimeSlots(); // Keep slot changes up-to-date
+                renderTimeSlots();
             }
         }
 
-        // Generate Time Slot Interface Grid Elements
         function renderTimeSlots() {
             const container = document.getElementById('timeSlotContainer');
             container.innerHTML = '';
-            
-            // Map occupied keys out of database storage
             const takenSlots = bookings.map(b => b.bookedSlot);
 
             HOURS.forEach(time => {
@@ -231,7 +244,6 @@
             });
         }
 
-        // UI Interactive Selection State Styles Management
         function selectSlot(element, time) {
             const currentSelected = document.getElementById('selectedTime').value;
             const buttons = document.getElementById('timeSlotContainer').getElementsByTagName('button');
@@ -250,7 +262,6 @@
             }
         }
 
-        // Booking submission pipeline handler
         function handleBooking(e) {
             e.preventDefault();
             const chosenSlot = document.getElementById('selectedTime').value;
@@ -260,7 +271,6 @@
                 return;
             }
 
-            // Extract UTM tracking parameters dropped inside browser location address bars
             const urlParams = new URLSearchParams(window.location.search);
             const campaignSource = urlParams.get('utm_source') || 'Direct Organic / Unknown';
             const campaignName = urlParams.get('utm_campaign') || 'N/A';
@@ -268,34 +278,33 @@
             const newBooking = {
                 timestamp: new Date().toLocaleString(),
                 name: document.getElementById('custName').value.trim(),
+                phone: document.getElementById('custPhone').value.trim(),
                 type: document.getElementById('custType').value,
                 location: document.getElementById('custLocation').value.trim() || 'Not Provided',
                 bookedSlot: chosenSlot,
                 campaignContext: `Source: ${campaignSource} | Campaign: ${campaignName}`
             };
 
-            // Commit data entry into structural system engine
             bookings.push(newBooking);
             localStorage.setItem('ut_vr_bookings', JSON.stringify(bookings));
 
-            // Clean UI form conditions state values
             document.getElementById('bookingForm').reset();
             document.getElementById('selectedTime').value = '';
             renderTimeSlots();
             renderTable();
 
-            // Native mobile hardware routing switch loop to pop the dial pad
             const sanitizedPhone = config.terminalNumber.replace(/\s+/g, '');
             window.location.href = `tel:${sanitizedPhone}`;
         }
 
-        // Tracking URL Generator Module
         function generateAdsLink() {
             const base = document.getElementById('baseAppUrl').value;
             const camp = encodeURIComponent(document.getElementById('campaignName').value.trim() || 'campaign');
             const finalUrl = `${base}?utm_source=google_ads&utm_medium=cpc&utm_campaign=${camp}`;
             document.getElementById('generatedLinkOutput').innerText = finalUrl;
         }
+
+        document.getElementById('campaignName').oninput = generateAdsLink;
 
         function updateTerminalNumber() {
             const num = document.getElementById('terminalNumberInput').value.trim();
@@ -310,23 +319,22 @@
             alert("Tracking deep link copied to clipboard successfully!");
         }
 
-        // Render Database Records to Log Table Layout Component
         function renderTable() {
             const tbody = document.getElementById('registryTableBody');
             tbody.innerHTML = '';
 
             if (bookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-400 font-medium italic bg-gray-50/50">No lead registrations processed yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-400 font-medium italic bg-gray-50/50">No lead registrations processed yet.</td></tr>`;
                 return;
             }
 
-            // Fixed Array structural mapping loop sequence to avoid mobile browser run errors
             [...bookings].reverse().forEach(b => {
                 const row = document.createElement('tr');
                 row.className = "hover:bg-gray-50 transition-colors";
                 row.innerHTML = `
                     <td class="p-4 font-mono text-xs text-gray-500">${b.timestamp}</td>
                     <td class="p-4 font-semibold text-gray-900">${b.name}</td>
+                    <td class="p-4 font-mono text-gray-800">${b.phone}</td>
                     <td class="p-4"><span class="px-2 py-1 text-xs rounded font-medium bg-gray-100 border border-gray-200">${b.type}</span></td>
                     <td class="p-4 text-gray-600">${b.location}</td>
                     <td class="p-4"><span class="px-2 py-1 text-xs rounded font-bold bg-amber-100 text-amber-800 border border-amber-200">${b.bookedSlot}</span></td>
@@ -336,7 +344,6 @@
             });
         }
 
-        // SheetJS Data Exporter Interface Integration Engine
         function exportToExcel() {
             if (bookings.length === 0) {
                 alert("No data available to translate to Excel format.");
@@ -347,6 +354,7 @@
                 "ID": index + 1,
                 "Timestamp Logged": b.timestamp,
                 "Customer Name": b.name,
+                "Customer Phone": b.phone,
                 "Profession Profile Type": b.type,
                 "Site / Project Location": b.location,
                 "Allocated VR Booking Slot": b.bookedSlot,
@@ -357,15 +365,12 @@
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "VR Lead Conversions");
 
-            // Format layout column boundaries inside output file
-            const maxProps = [{wch: 6}, {wch: 24}, {wch: 26}, {wch: 16}, {wch: 28}, {wch: 26}, {wch: 45}];
+            const maxProps = [{wch: 6}, {wch: 24}, {wch: 24}, {wch: 16}, {wch: 16}, {wch: 28}, {wch: 26}, {wch: 45}];
             worksheet['!cols'] = maxProps;
 
-            // Trigger structural browser downloadable event handler
             XLSX.writeFile(workbook, `UltraTech_VR_Service_Leads_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
-        // System memory database flush cleanup controller
         function clearSystemData() {
             if(confirm("Warning! This operation permanently wipes all local appointments stored on this device. Proceed?")) {
                 bookings = [];
